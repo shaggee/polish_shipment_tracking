@@ -190,6 +190,9 @@ class ShipmentCoordinator(DataUpdateCoordinator):
         self._hidden_shipments = parse_hidden_shipments(
             entry.options.get(CONF_HIDDEN_SHIPMENTS)
         )
+        # Every number the hidden parcels are known under, so Allegro does
+        # not show them again as its own orders.
+        self.hidden_tracking_numbers: set[str] = set(self._hidden_shipments)
         # Allegro only: every order from the last fetch, including the ones
         # hidden because a carrier account already tracks the same parcel.
         self.allegro_orders: list[dict] = []
@@ -250,13 +253,15 @@ class ShipmentCoordinator(DataUpdateCoordinator):
 
         Remembered after the carrier drops a parcel too: carriers usually
         report the pickup before Allegro does, and the order must not pop
-        back up as a new Allegro shipment in between.
+        back up as a new Allegro shipment in between. Parcels the user hid
+        in a carrier account count too, so they stay hidden in Allegro.
         """
         domain_data = self.hass.data.setdefault(DOMAIN, {})
         numbers: set[str] = domain_data.setdefault("_carrier_tracking_numbers", set())
         for coordinator in domain_data.values():
             if not isinstance(coordinator, ShipmentCoordinator) or coordinator.courier == "allegro":
                 continue
+            numbers |= coordinator.hidden_tracking_numbers
             for parcel in coordinator.data or []:
                 numbers |= get_parcel_tracking_numbers(parcel, coordinator.courier)
         return numbers
@@ -702,6 +707,9 @@ class ShipmentCoordinator(DataUpdateCoordinator):
 
             # 3. Hidden by the user in the account options
             if is_hidden_shipment(parcel, self.courier, self._hidden_shipments):
+                self.hidden_tracking_numbers |= get_parcel_tracking_numbers(
+                    parcel, self.courier
+                )
                 _LOGGER.debug("Filtered out hidden parcel %s", parcel_id)
                 continue
 
