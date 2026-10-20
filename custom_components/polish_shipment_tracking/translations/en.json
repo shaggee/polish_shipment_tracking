@@ -56,6 +56,7 @@
     },
     "error": {
       "auth_error": "Authentication failed. Please check your credentials.",
+      "pocztex_invalid_credentials": "Pocztex rejected the e-mail or password. Use the e-mail and password of the Pocztex mobile app account; an account from another Poczta Polska service may not work.",
       "invalid_code": "Invalid verification code.",
       "inpost_no_code": "There is no sign-in code in the pasted text. After signing in, paste the whole address from the browser's address bar (…/callback?code=…).",
       "inpost_sms_code": "This looks like an SMS code. Enter it on the InPost page, then paste the address the browser shows after signing in.",

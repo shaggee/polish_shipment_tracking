@@ -14,6 +14,12 @@ Authorization is basically:
 3. Parse redirect URL to get authorization code
 4. POST to token endpoint with authorization code to get access and refresh tokens
 """
+
+
+class PocztexAuthError(Exception):
+    """The Pocztex login page rejected the e-mail or password."""
+
+
 class PocztexApi:
     API_BASE_URL = "https://aplikacja.pocztex.pl/api/customer"
     AUTH_BASE_URL = "https://idm.pocztex.pl"
@@ -152,10 +158,27 @@ class PocztexApi:
                             return self._extract_code(next_resolved)
 
             body = await resp.text()
+            # A rejected login renders the form again with the reason in it.
+            message = self._parse_login_error(body)
+            if message:
+                raise PocztexAuthError(message)
             snippet = " ".join(body.split())[:500] if body else ""
             raise Exception(
                 f"Pocztex login failed. Status {resp.status}. Body: {snippet}"
             )
+
+    def _parse_login_error(self, html_text):
+        if not html_text:
+            return None
+        match = re.search(
+            r"<span[^>]*(?:id=[\"\\']input-error[\"\\']|class=[\"\\'][^\"\\']*kc-feedback-text[^\"\\']*[\"\\'])[^>]*>(.*?)</span>",
+            html_text,
+            re.IGNORECASE | re.DOTALL,
+        )
+        if not match:
+            return None
+        text = " ".join(html.unescape(re.sub(r"<[^>]+>", " ", match.group(1))).split())
+        return text or None
 
     def _extract_code(self, redirect_url):
         parsed = urllib.parse.urlparse(redirect_url)

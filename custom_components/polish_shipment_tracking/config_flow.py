@@ -131,8 +131,8 @@ class ShipmentTrackingConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             password = str(user_input[CONF_PASSWORD])
 
             session = async_get_clientsession(self.hass)
+            from .api_pocztex import PocztexApi, PocztexAuthError
             try:
-                from .api_pocztex import PocztexApi
                 api = PocztexApi(session)
                 data = await api.login(email, password)
 
@@ -147,6 +147,9 @@ class ShipmentTrackingConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_REFRESH_EXPIRES_AT: api._refresh_expires_at,
                     }
                 )
+            except PocztexAuthError as e:
+                _LOGGER.warning("Pocztex rejected the login: %s", e)
+                errors["base"] = "pocztex_invalid_credentials"
             except Exception as e:
                 _LOGGER.exception("Pocztex login failed: %s", e)
                 errors["base"] = "auth_error"

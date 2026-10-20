@@ -56,6 +56,7 @@
     },
     "error": {
       "auth_error": "Błąd uwierzytelniania. Sprawdź swoje dane.",
+      "pocztex_invalid_credentials": "Pocztex odrzucił e-mail lub hasło. Podaj e-mail i hasło konta z aplikacji mobilnej Pocztex; konto z innej usługi Poczty Polskiej może nie działać.",
       "invalid_code": "Nieprawidłowy kod weryfikacyjny.",
       "inpost_no_code": "We wklejonym tekście nie ma kodu logowania. Po zalogowaniu wklej cały adres z paska adresu przeglądarki (…/callback?code=…).",
       "inpost_sms_code": "To wygląda na kod SMS. Wpisz go na stronie InPostu, a potem wklej adres, który przeglądarka pokaże po zalogowaniu.",
