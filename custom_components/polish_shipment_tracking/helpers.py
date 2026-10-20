@@ -211,6 +211,11 @@ _STATUS_MAP = {
         "CANCELED": "cancelled",
         "CANCELLED": "cancelled",
         "CANCELED_REDIRECT_TO_BOX": "cancelled",
+        "TERMINATED": "cancelled",
+        "CLAIM_PROCESSED": "returned",
+        "RETURNED": "returned",
+        "DESTROYED": "cancelled",
+        "DISCARDED": "cancelled",
         "DELAY_IN_DELIVERY": "exception",
         "DELIVERY_ATTEMPT_FAILED": "exception",
         "UNDELIVERED": "exception",
@@ -441,7 +446,9 @@ def count_ready_for_pickup(parcels: list[dict], courier: str) -> int:
 
 
 def is_delivered(data: dict, courier: str) -> bool:
-    """Check if parcel is delivered."""
+    """Check if parcel is delivered or in a terminal state."""
+    if not isinstance(data, dict):
+        return False
     # Pocztex archives parcels with state/stateCode nulled out, which would
     # otherwise normalize to "unknown" and resurface the parcel as active.
     # Parcels that merely lack a state (e.g. still awaiting the first scan)
